@@ -1,0 +1,16 @@
+{
+  "name": "usage-mod",
+  "owner": {
+    "name": "Sunny Merchant"
+  },
+  "metadata": {
+    "description": "Usage meter mod for Claude Code"
+  },
+  "plugins": [
+    {
+      "name": "usage-meter",
+      "source": "./usage-meter",
+      "description": "Shows remaining Claude usage and reset time for each rate-limit window, as progress bars above the prompt"
+    }
+  ]
+}
