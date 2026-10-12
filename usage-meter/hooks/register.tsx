@@ -26,6 +26,9 @@ const mode = atom({ plugin: 'usage-meter', key: 'mode' } as const, 'full' as Mod
 
 // The view survives across sessions in the plugin's store.
 const MODE_KEY = 'mode'
+// The latest limits and when they were read. The store is a file on disk, so a monitor
+// outside Claude Code (the ClaudeBar taskbar strip) can show them.
+const SNAPSHOT_KEY = 'limits'
 // The empty track, in the theme's own muted color so it suits light and dark.
 const TRACK = 'subtle'
 const REACHED = 'limit reached'
@@ -43,6 +46,7 @@ export const register: Register = on => {
     await update($, limits, () => usage.rateLimits)
     await update($, now, () => t)
     if (isMode(saved)) await update($, mode, () => saved)
+    await $.store.set(SNAPSHOT_KEY, { at: t, limits: usage.rateLimits })
     await $.command.register({
       name: 'usage-meter',
       description: 'Show the usage bars; add "slim" or "full" to switch views',
@@ -59,6 +63,7 @@ export const register: Register = on => {
     const t = await $.clock.now()
     await update($, limits, () => e.rateLimits)
     await update($, now, () => t)
+    await $.store.set(SNAPSHOT_KEY, { at: t, limits: e.rateLimits })
     for (const l of e.rateLimits) {
       for (const threshold of WARN_AT) {
         const key = `${l.kind}:${l.resetsAt ?? ''}:${threshold}`

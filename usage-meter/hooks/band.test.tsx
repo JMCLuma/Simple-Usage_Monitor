@@ -39,3 +39,17 @@ test('band draws both windows in full and one in slim, on terminal and desktop',
     await ui.unmount()
   }
 })
+
+test('each measurement is saved to the store for monitors outside Claude Code', async ($, on) => {
+  const at = Date.parse('2026-10-07T20:55:00Z')
+  mock.clock(on, { now: at })
+  // The store, as the engine keeps it: what the plugin sets is what a monitor reads from disk.
+  const saved: Record<string, unknown> = {}
+  on('store.set', ($, e) => {
+    saved[e.key] = e.value
+    return { value: undefined }
+  })
+  on('session.measure', ($, e) => ({ changed: e.changed }))
+  await $.session.measure({ context: {}, rateLimits: LIMITS, changed: ['rateLimits'] } as never)
+  expect(saved.limits).toEqual({ at, limits: LIMITS })
+})
